@@ -1,6 +1,7 @@
 # Aquarium Monitoring System 
 
-**Introduction **
+**Introduction**
+
 Aquarium fish need stable water conditions to live safely. If the water becomes dirty, the water 
 level becomes low, or the temperature becomes harmful, fish can become stressed, sick, or 
 even die. In many situations these problems are not noticed quickly by the aquarium owner. 
@@ -20,7 +21,8 @@ feeding times, the ESP32 rotates the servo motor to release fish food. Overall  
 reduce manual monitoring, improves aquarium safety, and supports better fish care. 
 
 
-**System Architecture **
+**System Architecture**
+
 The system architecture of the ESP32 based Smart Aquarium Monitoring and Automatic 
 Feeding System is designed to monitor aquarium conditions, process sensor data, and alert the 
 user when unsafe conditions are detected. The ESP32 microcontroller is placed at the center of 
