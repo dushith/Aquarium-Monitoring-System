@@ -1,4 +1,4 @@
-# AquaSense - Smart Aquarium Monitoring & Automated Feeder System 🐠🌊
+# Aquarium Monitoring System  🐠🌊
 
 An IoT Smart Aquarium Monitoring and Automated Feeder System built for **IT1140 Fundamentals of Computing - Mini Project**. It features a modern **Web Dashboard and Android PWA Mobile App** connected to an ESP32 microcontroller via **Blynk IoT Cloud REST API** and **Telegram Bot alerts**.
 
