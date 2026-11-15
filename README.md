@@ -42,6 +42,13 @@ motor and release fish food into the aquarium.
 For remote monitoring the ESP32 connects to the internet using Wi-Fi and sends data to Blynk 
 IoT Cloud. Blynk IoT displays live sensor values such as water level, turbidity, temperature, 
 buzzer status, and feeding status on the mobile dashboard. 
+The system also uses a Telegram Bot to send direct text alert messages to the user’s phone. 
+This provides an additional notification method which makes the alert system more reliable. 
+Overall, the system architecture shows how the sensors, ESP32, buzzer, servo motor, Blynk 
+IoT, Telegram Bot, and mobile phone work together. The sensors collect data the ESP32 
+processes the data and the output devices and online platforms notify the user when action is 
+needed. This system helps maintain a safe aquarium environment and supports better fish care 
+by detecting problems early. 
 
 <img width="802" height="832" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/2ac780a8-75b5-4d0c-aab1-64ab73135429" />
 
