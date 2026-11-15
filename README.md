@@ -1,6 +1,47 @@
-# Aquarium Monitoring System  🐠🌊
+# Aquarium Monitoring System 
 
-An IoT Smart Aquarium Monitoring and Automated Feeder System built for **IT1140 Fundamentals of Computing - Mini Project**. It features a modern **Web Dashboard and Android PWA Mobile App** connected to an ESP32 microcontroller via **Blynk IoT Cloud REST API** and **Telegram Bot alerts**.
+**Introduction **
+Aquarium fish need stable water conditions to live safely. If the water becomes dirty, the water 
+level becomes low, or the temperature becomes harmful, fish can become stressed, sick, or 
+even die. In many situations these problems are not noticed quickly by the aquarium owner. 
+Therefore an automatic monitoring system is useful to detect unsafe conditions early and alert 
+the user. 
+The main purpose of this project is to save fish life by continuously monitoring aquarium water 
+conditions. This project uses an ESP32 microcontroller as the main controller. The ESP32 
+collects data from a turbidity sensor, water level sensor, and DS18B20 temperature sensor. The 
+turbidity sensor detects dirty or cloudy water, the water level sensor detects low water level, and 
+the temperature sensor measures the aquarium water temperature. 
+When the system detects an unsafe condition, such as dirty water, harmful temperature, or low 
+water level, the ESP32 activates a 12V buzzer to alert the user immediately. The system also 
+sends notifications through Blynk IoT and Telegram Bot. Blynk is used to display live sensor 
+values on a mobile dashboard while Telegram provides direct text alerts to the user’s phone. 
+This project also includes an automatic feeding function using a servo motor. At scheduled 
+feeding times, the ESP32 rotates the servo motor to release fish food. Overall  this system helps 
+reduce manual monitoring, improves aquarium safety, and supports better fish care. 
+
+
+**System Architecture **
+The system architecture of the ESP32 based Smart Aquarium Monitoring and Automatic 
+Feeding System is designed to monitor aquarium conditions, process sensor data, and alert the 
+user when unsafe conditions are detected. The ESP32 microcontroller is placed at the center of 
+the system because it works as the main control unit. The water level sensor, turbidity sensor, 
+and DS18B20 temperature sensor are connected to the ESP32 as input devices. These sensors 
+continuously collect information about the aquarium water condition. 
+The water level sensor is used to detect whether the aquarium water level is low. The turbidity 
+sensor is used to identify dirty water. The DS18B20 temperature sensor is used to measure the 
+water temperature. ESP32 reads the values from these sensors and compares them with 
+predefined range of values. If the sensor readings show an unsafe condition, such as low water 
+level, dirty water, or harmful temperature, the ESP32 activates the alert system. 
+The system uses a 12V buzzer as a local warning device. When the ESP32 detects a problem 
+the buzzer turns on and gives an alert to the user. This helps the user notice the problem 
+immediately without checking the mobile phone. The system also includes a servo motor which 
+is used for automatic fish feeding. At scheduled feeding times the ESP32 controls the servo 
+motor and release fish food into the aquarium. 
+For remote monitoring the ESP32 connects to the internet using Wi-Fi and sends data to Blynk 
+IoT Cloud. Blynk IoT displays live sensor values such as water level, turbidity, temperature, 
+buzzer status, and feeding status on the mobile dashboard. 
+
+<img width="802" height="832" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/2ac780a8-75b5-4d0c-aab1-64ab73135429" />
 
 ---
 
