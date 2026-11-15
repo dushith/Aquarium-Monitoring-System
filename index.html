@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="description" content="AquaGuard - Aquarium Monitoring System">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AquaGuard">
+
+  <title>AquaGuard - Smart Aquarium Monitor</title>
+
+  <!-- PWA Manifest & Favicon -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ocean: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- Top Notification / Alarm Banner -->
+  <div id="alarm-banner"
+    class="hidden bg-rose-600/90 text-white px-4 py-3 shadow-lg shadow-rose-900/30 sticky top-0 z-50 backdrop-blur-md flex items-center justify-between border-b border-rose-400/40 animate-pulse">
+    <div class="flex items-center gap-3">
+      <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-300 shrink-0"></i>
+      <span id="alarm-message" class="text-sm font-semibold tracking-wide">Warning: Aquarium parameter abnormal!</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="window.app.handleSilenceBuzzer()"
+        class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition backdrop-blur-sm">
+        Silence Buzzer
+      </button>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner for Mobile Users -->
+  <div id="pwa-install-banner"
+    class="hidden bg-gradient-to-r from-cyan-900/90 to-blue-900/90 border-b border-cyan-500/30 px-4 py-2.5 flex items-center justify-between z-40 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="p-1.5 bg-cyan-500/20 rounded-lg border border-cyan-400/30">
+        <i data-lucide="smartphone" class="w-4 h-4 text-cyan-300"></i>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-white">Install AquaGuard Mobile App</p>
+        <p class="text-[11px] text-cyan-200">Add to home screen for native full-screen experience</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btn-install-pwa"
+        class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs px-3 py-1 rounded-md font-bold transition shadow-sm">
+        Install
+      </button>
+      <button id="btn-dismiss-pwa" class="text-slate-400 hover:text-white p-1 text-xs">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div
+          class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 shadow-md shadow-cyan-500/20 border border-cyan-300/30">
+          <i data-lucide="fish" class="w-6 h-6 text-white floating"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1
+              class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent">
+              AquaGuard</h1>
+            <span
+              class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-700/50">GROUP
+              WD31</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Aquarium Monitoring System</p>
+        </div>
+      </div>
+
+      <!-- Right Controls & Status -->
+      <div class="flex items-center gap-3">
+        <!-- Live Clock -->
+        <div
+          class="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/40 border border-slate-700/50 text-xs text-slate-300">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span id="current-time" class="font-mono">--:--:--</span>
+        </div>
+
+        <!-- Connection Badge -->
+        <div id="connection-badge"
+          class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-semibold">
+          <span id="connection-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span id="connection-text">Connecting...</span>
+        </div>
+
+        <!-- Refresh Button -->
+        <button id="btn-refresh" title="Refresh Telemetry"
+          class="p-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 hover:text-white transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="btn-open-settings" title="Settings"
+          class="p-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 hover:text-white transition">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+      <!-- Card 1: Water Temperature -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between glow-cyan">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+              <i data-lucide="thermometer" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-400">Water Temperature</span>
+              <h3 id="val-temperature" class="text-3xl font-bold text-white tracking-tight mt-0.5">--.-°C</h3>
+            </div>
+          </div>
+          <span id="status-temperature"
+            class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            Checking...
+          </span>
+        </div>
+
+        <!-- Circular gauge & Range Info -->
+        <div class="mt-5 flex items-center justify-between pt-4 border-t border-slate-800/80">
+          <div class="space-y-1">
+            <div class="text-[11px] text-slate-400">Safe Temperature Range</div>
+            <div class="text-xs font-semibold text-cyan-300">24.0°C – 30.0°C</div>
+            <div class="text-[10px] text-slate-500"></div>
+          </div>
+          <!-- Gauge SVG -->
+          <div class="relative w-16 h-16 flex items-center justify-center">
+            <svg class="w-16 h-16 transform -rotate-90">
+              <circle cx="32" cy="32" r="26" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none" />
+              <circle id="gauge-temperature" cx="32" cy="32" r="26" stroke="#38bdf8" stroke-width="5"
+                stroke-linecap="round" fill="none" stroke-dasharray="163.3" stroke-dashoffset="40"
+                class="transition-all duration-700" />
+            </svg>
+            <i data-lucide="sun" class="w-4 h-4 text-cyan-400 absolute"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Water Level -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between glow-emerald">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <i data-lucide="waves" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-400">Water Level</span>
+              <h3 id="val-water" class="text-3xl font-bold text-white tracking-tight mt-0.5">----</h3>
+            </div>
+          </div>
+          <span id="status-water"
+            class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            Checking...
+          </span>
+        </div>
+
+        <!-- Level Bar & Threshold Info -->
+        <div class="mt-5 space-y-2 pt-4 border-t border-slate-800/80">
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>Low Alert: &lt; 1300</span>
+            <span class="text-slate-500"></span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+            <div id="bar-water" class="h-full bg-emerald-400 rounded-full transition-all duration-700"
+              style="width: 50%;"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-500">
+            <span>Low (Empty)</span>
+            <span>Optimal / Full Depth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Turbidity / Water Clarity -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between glow-amber">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <i data-lucide="droplets" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-400">Water Clarity (Turbidity)</span>
+              <h3 id="val-turbidity" class="text-3xl font-bold text-white tracking-tight mt-0.5">----</h3>
+            </div>
+          </div>
+          <span id="status-turbidity"
+            class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            Checking...
+          </span>
+        </div>
+
+        <!-- Clarity Bar & Threshold Info -->
+        <div class="mt-5 space-y-2 pt-4 border-t border-slate-800/80">
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>Cloudy Alert: &lt; 1700</span>
+            <span class="text-slate-500"></span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+            <div id="bar-turbidity" class="h-full bg-cyan-400 rounded-full transition-all duration-700"
+              style="width: 60%;"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-500">
+            <span>Cloudy / Dirty</span>
+            <span>Crystal Clear</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Feeder Controls & Schedule Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+      <!-- Feeder Control & Schedule Banner -->
+      <div class="glass-card rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="utensils" class="w-4 h-4 text-cyan-400"></i>
+              <h3 class="font-semibold text-white text-sm">Automated Feeder Schedule</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-mono"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            <!-- Schedule 1 -->
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="sunrise" class="w-3.5 h-3.5 text-amber-400"></i>
+                Morning Feed
+              </div>
+              <div id="schedule-morning" class="text-lg font-bold text-white mt-1">08:00</div>
+              <div class="text-[10px] text-slate-500">Scheduled Daily</div>
+            </div>
+
+            <!-- Schedule 2 -->
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="sunset" class="w-3.5 h-3.5 text-indigo-400"></i>
+                Evening Feed
+              </div>
+              <div id="schedule-evening" class="text-lg font-bold text-white mt-1">18:00</div>
+              <div class="text-[10px] text-slate-500">Scheduled Daily</div>
+            </div>
+
+            <!-- Countdown -->
+            <div class="p-3 rounded-xl bg-gradient-to-br from-cyan-950/60 to-blue-950/60 border border-cyan-500/30">
+              <div class="text-[11px] text-cyan-300 flex items-center gap-1.5">
+                <i data-lucide="timer" class="w-3.5 h-3.5 text-cyan-400"></i>
+                Next Feed In
+              </div>
+              <div id="feed-countdown" class="text-sm font-bold text-white mt-1 font-mono">Calculating...</div>
+              <div class="text-[10px] text-cyan-400/80"> </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Row -->
+        <div class="mt-5 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="text-xs text-slate-400 flex items-center gap-2">
+            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span></span>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <button id="btn-feed-now"
+              class="btn-ripple flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 text-xs sm:text-sm transition-all transform active:scale-95">
+              <i data-lucide="utensils" class="w-4 h-4"></i>
+              <span>Instant Feed Now</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Control & Safety Actions -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+              <h3 class="font-semibold text-white text-sm">Safety & Controls</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-mono"> </span>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <!-- Silence Button -->
+            <button id="btn-silence"
+              class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition opacity-50 pointer-events-none">
+              <i data-lucide="volume-x" class="w-4 h-4 text-yellow-400"></i>
+              <span>Mute / Silence Buzzer</span>
+            </button>
+
+            <!-- Telegram Bot Status -->
+            <div class="p-2.5 rounded-xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="send" class="w-4 h-4 text-blue-400"></i>
+                <span class="text-xs text-blue-200 font-medium">Telegram Bot</span>
+              </div>
+              <span
+                class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-400/30">Active</span>
+            </div>
+
+            <!-- Last Feed Log -->
+            <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+              <div class="text-[11px] text-slate-400">Latest ESP32 Status Log :</div>
+              <div id="val-feed-log" class="text-slate-300 font-mono text-[11px] mt-0.5 truncate">Waiting for data...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Real-time Chart & Activity Log Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+      <!-- Real-time Analytics Chart -->
+      <div class="glass-card rounded-2xl p-5 lg:col-span-2">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="line-chart" class="w-4 h-4 text-cyan-400"></i>
+            <h3 class="font-semibold text-white text-sm">Live Sensor Telemetry Trends</h3>
+          </div>
+          <span class="text-xs text-slate-400">Real-time Stream </span>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+          <canvas id="telemetryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Activity & Alert Log -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col h-[340px]">
+        <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
+          <div class="flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+            <h3 class="font-semibold text-white text-sm">Activity & Alert Log</h3>
+          </div>
+          <button id="btn-clear-logs" class="text-[11px] text-slate-400 hover:text-cyan-400 transition">Clear</button>
+        </div>
+        <div id="activity-logs" class="flex-1 overflow-y-auto space-y-2 pr-1">
+          <!-- Dynamically populated entries -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/60 bg-slate-950/80 py-4 text-center text-xs text-slate-500 safe-bottom">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>Ⓒ 2026 Aquarium Monitoring System &bull; ESP32 + Telegram + Blynk IoT</div>
+      <div class="flex items-center gap-3">
+        <span class="text-cyan-400 font-medium">GROUP WD31 </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Settings & Customization Modal -->
+  <div id="settings-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div
+      class="glass-card rounded-2xl w-full max-w-lg p-6 border border-cyan-500/30 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="font-bold text-white text-base">System Settings</h3>
+        </div>
+        <button id="btn-close-settings" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Blynk Auth Token & Feed Pin -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-300 mb-1">Blynk Auth Token</label>
+            <input type="text" id="input-token"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono focus:border-cyan-500 outline-none">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Feed Pin</label>
+            <input type="text" id="input-feed-pin" placeholder="V6"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono focus:border-cyan-500 outline-none uppercase">
+          </div>
+        </div>
+
+        <!-- Temperature Limits -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Min Temperature (°C)</label>
+            <input type="number" step="0.5" id="input-min-temp"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Max Temperature (°C)</label>
+            <input type="number" step="0.5" id="input-max-temp"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Water & Turbidity Thresholds -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Water Low Threshold</label>
+            <input type="number" id="input-water-thresh"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Turbidity Threshold</label>
+            <input type="number" id="input-turb-thresh"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Feeding Schedule Times -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Morning Feed Time</label>
+            <input type="time" id="input-morning-time"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">Evening Feed Time</label>
+            <input type="time" id="input-evening-time"
+              class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:border-cyan-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Switches -->
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="check-demo-mode"
+              class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500">
+            <span class="text-slate-300 font-medium">Demo Simulator Mode (Test UI without ESP32 online)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="check-sound-alarm"
+              class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500">
+            <span class="text-slate-300 font-medium">Enable In-App Audio Alarm Chime</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <button id="btn-save-settings"
+          class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/blynk-api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>
