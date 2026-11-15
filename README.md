@@ -80,7 +80,7 @@ by detecting problems early.
 ## 📂 Project Structure
 
 ```
-Testing app/
+app/
 ├── index.html                           # Responsive Web & Mobile Dashboard
 ├── manifest.json                        # Web App Manifest for Android PWA installation
 ├── service-worker.js                    # PWA Service Worker for offline asset caching
